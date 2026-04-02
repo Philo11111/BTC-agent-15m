@@ -4,4 +4,3 @@ numpy==1.26.4
 ccxt==4.3.0
 python-telegram-bot==21.4
 Flask==3.0.3
-ta-lib==0.4.32 ; sys_platform != "win32"  # якщо є ta-lib
