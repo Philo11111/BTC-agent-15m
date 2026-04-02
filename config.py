@@ -2,12 +2,12 @@
 #  config.py  —  всі налаштування в одному місці
 # ============================================================
 
+# Налаштування Telegram (змінні середовища для Railway)
 import os
 
 # Налаштування Telegram (змінні середовища для Railway)
-TELEGRAM_TOKEN   = os.getenv("TELEGRAM_TOKEN", "8016795150:AAEaEcd4thEhIxPwRGGZKjcRaqnJUcoAmOE")
-TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "8557707043")
-
+TELEGRAM_TOKEN   = os.getenv("TELEGRAM_TOKEN", "YOUR_BOT_TOKEN")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "YOUR_CHAT_ID")
  
 
 # --- Торговий символ ---
