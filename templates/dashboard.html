@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BTC Signal Bot</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0d1117; color: #e6edf3; font-family: 'Segoe UI', sans-serif; }
+
+  header {
+    background: #161b22;
+    border-bottom: 1px solid #30363d;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  header h1 { font-size: 1.3rem; font-weight: 600; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: #3fb950; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
+
+  /* Stats row */
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 28px; }
+  .stat-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    padding: 16px 20px;
+  }
+  .stat-card .label { font-size: .75rem; color: #8b949e; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+  .stat-card .value { font-size: 1.6rem; font-weight: 700; }
+  .up   { color: #3fb950; }
+  .down { color: #f85149; }
+  .neutral { color: #d29922; }
+
+  /* Timeframe panels */
+  .tf-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 28px; }
+  .tf-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .tf-card h3 { font-size: .85rem; color: #8b949e; margin-bottom: 12px; text-transform: uppercase; }
+  .indicator { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: .85rem; }
+  .indicator .name { color: #8b949e; }
+  .badge {
+    font-size: .7rem; font-weight: 600; padding: 2px 8px;
+    border-radius: 12px; text-transform: uppercase;
+  }
+  .badge-bull { background: #1a3d2e; color: #3fb950; }
+  .badge-bear { background: #3d1a1a; color: #f85149; }
+  .badge-neu  { background: #2d2d1a; color: #d29922; }
+
+  /* Signals log */
+  .section-title { font-size: 1rem; font-weight: 600; color: #8b949e; margin-bottom: 14px; text-transform: uppercase; letter-spacing: .05em; }
+  .signals-list { display: flex; flex-direction: column; gap: 12px; }
+  .signal-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .signal-card.up-card   { border-left: 3px solid #3fb950; }
+  .signal-card.down-card { border-left: 3px solid #f85149; }
+
+  .sig-dir { font-size: 1.4rem; }
+  .sig-info { flex: 1; }
+  .sig-title { font-weight: 600; font-size: .95rem; }
+  .sig-reasons { font-size: .78rem; color: #8b949e; margin-top: 4px; }
+  .sig-meta { text-align: right; font-size: .78rem; color: #8b949e; }
+  .sig-score { font-weight: 700; font-size: 1.1rem; }
+
+  .no-signals { text-align: center; color: #8b949e; padding: 40px; }
+
+  /* Auto-refresh notice */
+  .refresh-note { font-size: .75rem; color: #8b949e; text-align: center; margin-top: 20px; }
+</style>
+<meta http-equiv="refresh" content="60">
+</head>
+<body>
+
+<header>
+  <div class="dot"></div>
+  <h1>₿ BTC Signal Bot</h1>
+  <span style="margin-left:auto;font-size:.8rem;color:#8b949e">оновлення кожну хвилину</span>
+</header>
+
+<div class="container">
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat-card">
+      <div class="label">Поточна ціна</div>
+      <div class="value neutral" id="price">{{ price }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Сигналів сьогодні</div>
+      <div class="value up">{{ signals_today }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Остання перевірка</div>
+      <div class="value" style="font-size:1rem;padding-top:4px">{{ last_check }}</div>
+    </div>
+  </div>
+
+  <!-- Timeframe panels -->
+  <div class="section-title">Стан індикаторів</div>
+  <div class="tf-grid">
+    {% for tf, data in tf_data.items() %}
+    <div class="tf-card">
+      <h3>{{ tf }}</h3>
+      {% for ind in data %}
+      <div class="indicator">
+        <span class="name">{{ ind.name }}</span>
+        <span class="badge badge-{{ ind.cls }}">{{ ind.value }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Signals log -->
+  <div class="section-title">Останні сигнали</div>
+  <div class="signals-list">
+    {% if signals %}
+      {% for s in signals %}
+      <div class="signal-card {{ 'up-card' if s.direction == 'UP' else 'down-card' }}">
+        <div class="sig-dir">{{ '🟢' if s.direction == 'UP' else '🔴' }}</div>
+        <div class="sig-info">
+          <div class="sig-title">
+            {{ s.timeframe }} — {{ 'ВГОРУ' if s.direction == 'UP' else 'ВНИЗ' }}
+            &nbsp;|&nbsp; ${{ "%.2f"|format(s.price) }}
+          </div>
+          <div class="sig-reasons">{{ s.reasons | join(' &bull; ') | safe }}</div>
+        </div>
+        <div class="sig-meta">
+          <div class="sig-score {{ 'up' if s.direction == 'UP' else 'down' }}">{{ s.score }}/{{ s.max_score }}</div>
+          <div>RSI {{ s.rsi }}</div>
+          <div>{{ s.timestamp }}</div>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="no-signals">Сигналів ще немає. Очікую якісних точок входу... 🔍</div>
+    {% endif %}
+  </div>
+
+  <div class="refresh-note">Сторінка оновлюється автоматично кожну хвилину</div>
+</div>
+
+</body>
+</html>
