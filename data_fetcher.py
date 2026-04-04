@@ -98,8 +98,8 @@ def get_ohlcv(timeframe: str) -> pd.DataFrame:
     Порядок: Binance (Railway/США) → OKX (везде) → Kraken (резерв)
     """
     sources = [
-        ("Binance", _from_binance),
         ("OKX",     _from_okx),
+        ("Binance", _from_binance),
         ("Kraken",  _from_kraken),
     ]
     for name, fn in sources:
