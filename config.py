@@ -30,7 +30,7 @@ SIGNAL_COOLDOWN = {
 
 # ── Інтервали перевірки (секунди) ────────────────────────────
 CHECK_INTERVAL_CLASSIC  = 60    # класична — кожну хвилину
-CHECK_INTERVAL_KRAJEKIS = 900   # krajekis — кожні 15 хвилин
+CHECK_INTERVAL_KRAJEKIS = 300   # krajekis — кожні 5 хвилин
 
 # ── Порт дашборду ─────────────────────────────────────────────
 WEB_PORT = int(os.getenv("PORT", 5000))
